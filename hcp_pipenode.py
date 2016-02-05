@@ -357,30 +357,34 @@ def compute_tract_query(dir_src, dir_out, subj, verbose=False):
 
 
 
-def compute_conmats(dir_res_out,rois):
+def compute_conmats(dir_res_out):
+
+    # Connectiivty matrices are compute for all tractograms
+    # and all .nii.gz parcellation files prefixed with 'parc_'
 
     dpys = glob.glob(dir_res_out + '/*.dpy')
+    parcs = glob.glob(dir_res_out + '/parc_*.nii.gz')
 
-    for roi in rois:
+    for parc in parcs:
 
-      roi_name = roi.replace('.nii.gz', '')
-      roi_file = os.path.join(dir_res_out,r)
-      roi_img = nib.load(roi_file)
-      roi_dat = roi_img.get_data().astype('int32')
+      parc_name = parc.replace('.nii.gz', '')
+      parc_file = os.path.join(dir_res_out,parc)
+      parc_img = nib.load(parc_file)
+      parc_dat = parc_img.get_data().astype('int32')
 
       affine = np.eye(4)
 
       for dpy_file in dpys:
 
-        cm_file = dpy_file.replace('tractogram', '%s_conmat' %roi_name)
-        mapping_file = dpy_file.replace('tractogram', '%s_conmat_mapping' %roi_name)
+        cm_file = dpy_file.replace('tractogram', '%s_conmat' %parc_name)
+        mapping_file = dpy_file.replace('tractogram', '%s_conmat_mapping' %parc_name)
 
 
         dpy = Dpy(dpy_file, 'r')
         dpy_streams = dpy.read_tracks()
         dpy.close()
 
-        M,G = connectivity_matrix(dpy_streams,roi_dat,affine=affine,
+        M,G = connectivity_matrix(dpy_streams,parc_dat,affine=affine,
                                   return_mapping=True,mapping_as_streamlines=False)
 
         np.save(cm_file, M)
