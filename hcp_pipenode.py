@@ -5,6 +5,7 @@ import numpy as np
 import nibabel as nib
 from os.path import join as pjoin
 from dipy.io import read_bvals_bvecs
+from dipy.io.dpy import Dpy
 from dipy.core.gradients import gradient_table
 from dipy.align.aniso2iso import resample
 from dipy.align.aniso2iso import reslice
@@ -212,6 +213,15 @@ def tracking_eudx(dir_src, dir_out, verbose=False):
     trk_out = os.path.join(dir_out, trk_name)
     nib.trackvis.write(trk_out, strm, hdr, points_space='voxel')    
 
+    dpy_out = trk_out.replace('.trk', '.dpy')
+    dpy = Dpy(dpy_out, 'w')
+    dpy.write_tracks(streamlines)
+    dpy.close()
+
+
+
+
+
 
 def tracking_eudx4csd(dir_src, dir_out, verbose=False):
 
@@ -262,6 +272,11 @@ def tracking_eudx4csd(dir_src, dir_out, verbose=False):
     trk_out = os.path.join(dir_out, trk_name)
     nib.trackvis.write(trk_out, strm, hdr, points_space='voxel')    
 
+    dpy_out = trk_out.replace('.trk', '.dpy')
+    dpy = Dpy(dpy_out, 'w')
+    dpy.write_tracks(streamlines)
+    dpy.close()
+
 
 
 
@@ -283,7 +298,14 @@ def tracking_maxodf(dir_src, dir_out, verbose=False):
     streamlines = list(streamlines)
 
     trk_name = 'tractogram_' + par_b_tag + '_' + par_dim_tag + '_' + par_trk_odf_tag + '.trk'
-    save_trk(pjoin(dir_out, trk_name), streamlines, affine, wm_mask.shape)
+    trk_out = os.path.join(dir_out, trk_name)
+    save_trk(trk_out, streamlines, affine, wm_mask.shape)
+
+    dpy_out = trk_out.replace('.trk', '.dpy')
+    dpy = Dpy(dpy_out, 'w')
+    dpy.write_tracks(streamlines)
+    dpy.close()
+
 
 
 def tracking_prob(dir_src, dir_out, verbose=False):
@@ -304,8 +326,14 @@ def tracking_prob(dir_src, dir_out, verbose=False):
     streamlines = list(streamlines)
 
     trk_name = 'tractogram_' + par_b_tag + '_' + par_dim_tag + '_' + par_trk_prob_tag + '.trk'
-    save_trk(pjoin(dir_out, trk_name), streamlines, affine, wm_mask.shape)
+    trk_out = os.path.join(dir_out, trk_name)
+ 
+    save_trk(trk_out, streamlines, affine, wm_mask.shape)
 
+    dpy_out = trk_out.replace('.trk', '.dpy')
+    dpy = Dpy(dpy_out, 'w')
+    dpy.write_tracks(streamlines)
+    dpy.close()
 
 
 def compute_tract_query(dir_src, dir_out, subj, verbose=False):
