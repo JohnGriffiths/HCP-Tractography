@@ -11,7 +11,7 @@ from dipy.align.aniso2iso import resample
 from dipy.align.aniso2iso import reslice
 from dipy.reconst.dti import TensorModel
 from dipy.data import get_sphere
-from dipy.tracking.utils import seeds_from_mask
+from dipy.tracking.utils import seeds_from_mask,connectivity_matrix
 from dipy.reconst.dti import quantize_evecs
 from dipy.reconst.peaks import peaks_from_model
 from dipy.reconst.csdeconv import ConstrainedSphericalDeconvModel, auto_response
@@ -352,3 +352,38 @@ def compute_tract_query(dir_src, dir_out, subj, verbose=False):
     wmql_prefix = pjoin(wmql_out, subj)
     print wmql_prefix
     tract_querier(trk_file, wmparc_file, wmql_file, wmql_prefix, par_wmql_opt)
+
+
+
+
+
+def compute_conmats(dir_res_out,rois):
+
+    dpys = glob.glob(dir_res_out + '/*.dpy')
+
+    for roi in rois:
+
+      roi_name = roi.replace('.nii.gz', '')
+      roi_file = os.path.join(dir_res_out,r)
+      roi_img = nib.load(roi_file)
+      roi_dat = roi_img.get_data().astype('int32')
+
+      affine = np.eye(4)
+
+      for dpy_file in dpys:
+
+        cm_file = dpy_file.replace('tractogram', '%s_conmat' %roi_name)
+        mapping_file = dpy_file.replace('tractogram', '%s_conmat_mapping' %roi_name)
+
+
+        dpy = Dpy(dpy_file, 'r')
+        dpy_streams = dpy.read_tracks()
+        dpy.close()
+
+        M,G = connectivity_matrix(dpy_streams,roi_dat,affine=affine,
+                                  return_mapping=True,mapping_as_streamlines=False)
+
+        np.save(cm_file, M)
+        np.save(mapping_file,G)
+      
+
