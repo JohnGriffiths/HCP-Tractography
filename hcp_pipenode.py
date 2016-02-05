@@ -4,6 +4,7 @@ import glob
 import inspect
 import numpy as np
 import nibabel as nib
+import h5py
 from os.path import join as pjoin
 from dipy.io import read_bvals_bvecs
 from dipy.io.dpy import Dpy
@@ -381,8 +382,7 @@ def compute_conmats(dir_res_out):
                              + dpy_name.replace('tractogram', '')
         mapping_name = cm_name.replace('Conmat', 'conmat_mapping')
 
-        cm_file = dir_res_out + '/' + cm_name + '.npy'
-        mapping_file = dir_res_out + '/' + mapping_name + '.txt'
+        cm_file = dir_res_out + '/' + cm_name + '.h5'
 
         dpy = Dpy(dpy_file, 'r')
         dpy_streams = dpy.read_tracks()
@@ -391,10 +391,11 @@ def compute_conmats(dir_res_out):
         M,G = connectivity_matrix(dpy_streams,parc_dat,affine=affine,
                                   return_mapping=True,mapping_as_streamlines=False)
 
-        
-        np.save(cm_file, M)
-        #np.savetxt(mapping_file, G)
-      
+        F = h5py.File(cm_file, 'w')
+        F.create_dataset('M', data=M)
+        g = F.create_group('G')  
+        for k,v in G.items(): g[str(k)] = v
+        F.close()
 
 
 
