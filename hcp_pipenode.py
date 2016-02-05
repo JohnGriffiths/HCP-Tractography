@@ -1,5 +1,6 @@
 import os
 import sys
+import glob
 import inspect
 import numpy as np
 import nibabel as nib
@@ -365,10 +366,9 @@ def compute_conmats(dir_res_out):
     dpys = glob.glob(dir_res_out + '/*.dpy')
     parcs = glob.glob(dir_res_out + '/parc_*.nii.gz')
 
-    for parc in parcs:
+    for parc_file in parcs:
 
-      parc_name = parc.replace('.nii.gz', '')
-      parc_file = os.path.join(dir_res_out,parc)
+      parc_name = os.path.split(parc_file)[1].replace('.nii.gz', '')
       parc_img = nib.load(parc_file)
       parc_dat = parc_img.get_data().astype('int32')
 
@@ -376,9 +376,13 @@ def compute_conmats(dir_res_out):
 
       for dpy_file in dpys:
 
-        cm_file = dpy_file.replace('tractogram', '%s_conmat' %parc_name)
-        mapping_file = dpy_file.replace('tractogram', '%s_conmat_mapping' %parc_name)
+        dpy_name = os.path.split(dpy_file)[1].replace('.dpy', '')
+        cm_name = 'conmat__' + parc_name.replace('parc__', '') \
+                             + dpy_name.replace('tractogram', '')
+        mapping_name = cm_name.replace('Conmat', 'conmat_mapping')
 
+        cm_file = dir_res_out + '/' + cm_name + '.npy'
+        mapping_file = dir_res_out + '/' + mapping_name + '.txt'
 
         dpy = Dpy(dpy_file, 'r')
         dpy_streams = dpy.read_tracks()
@@ -387,7 +391,10 @@ def compute_conmats(dir_res_out):
         M,G = connectivity_matrix(dpy_streams,parc_dat,affine=affine,
                                   return_mapping=True,mapping_as_streamlines=False)
 
+        
         np.save(cm_file, M)
-        np.save(mapping_file,G)
+        #np.savetxt(mapping_file, G)
       
+
+
 

@@ -141,12 +141,12 @@ def run_pipeline():
 
 
 
-   print "Step %i: Compute connectivity matrices..." % step
+    print "Step %i: Compute connectivity matrices..." % step
     if do_step[step]:
-        compute_conmats(dir_res_out)
-        print "DONE!"
+         compute_conmats(dir_res_out)
+         print "DONE!"
     else:
-        print "Skipped."
+         print "Skipped."
     step += 1
 
 
