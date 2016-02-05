@@ -18,10 +18,9 @@ import os
 import sys
 import getopt
 from hcp_parameters import *
-from hcp_pipenode import single_shell_extraction, resample_data_resolution, compute_tensor_model, white_matter_mask_FA, white_matter_mask_wmparc, constrained_spherical_deconvolution, tracking_eudx, tracking_eudx4csd, tracking_maxodf, tracking_prob, compute_tract_query
+from hcp_pipenode import single_shell_extraction, resample_data_resolution, compute_tensor_model, white_matter_mask_FA, white_matter_mask_wmparc, constrained_spherical_deconvolution, tracking_eudx, tracking_eudx4csd, tracking_maxodf, tracking_prob, compute_tract_query, compute_conmats
 
-
-do_step = [1] * 12
+do_step = [1] * 13
 verbose = False
 
 
@@ -140,6 +139,17 @@ def run_pipeline():
         print "Skipped."
     step += 1
 
+
+
+   print "Step %i: Compute connectivity matrices..." % step
+    if do_step[step]:
+        compute_conmats(dir_res_out)
+        print "DONE!"
+    else:
+        print "Skipped."
+    step += 1
+
+
     print "*** END OF PIPELINE ***"
 
 
@@ -148,7 +158,7 @@ if __name__ == '__main__':
     for opt, arg in getopt.getopt(sys.argv[1:], "hi:s:v")[0]:
         
         if opt == '-s':
-            do_step =   [0] * 12
+            do_step =   [0] * 13
             arg_step = map(int, arg.split())
             for s in arg_step: do_step[s]=1
 
@@ -182,6 +192,7 @@ if __name__ == '__main__':
             print "         9. Computation of Max ODF Tracking for CSD"
             print "        10. Computation of Probabilistic Tracking for CSD"
             print "        11. Tract Dissection by White Matter Query Language"
+            print "        12. Computation of connectivity matrices"
             print "   help: -h"
             print "         this help"
             print "Examples:"
