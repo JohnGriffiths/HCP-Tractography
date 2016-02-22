@@ -20,7 +20,7 @@ import getopt
 from hcp_parameters import *
 from hcp_pipenode import single_shell_extraction, resample_data_resolution, compute_tensor_model, white_matter_mask_FA, white_matter_mask_wmparc, constrained_spherical_deconvolution, tracking_eudx, tracking_eudx4csd, tracking_maxodf, tracking_prob, compute_tract_query, compute_conmats
 
-do_step = [1] * 13
+do_step = [1] * 14
 verbose = False
 
 
@@ -115,6 +115,15 @@ def run_pipeline():
         print "Skipped."
     step += 1
 
+    print "Step %i: Computation of EuDX Tracking for CSD - GWMI seeds..." % step
+    if do_step[step]:
+        tracking_eudx4csd(dir_res_out, dir_res_out, verbose,gwmi_seeds=True)
+        print "DONE!"
+    else:
+        print "Skipped."
+    step += 1
+
+
     print "Step %i: Computation of Max ODF Tracking for CSD..." % step
     if do_step[step]:
         tracking_maxodf(dir_res_out, dir_res_out, verbose)
@@ -158,7 +167,7 @@ if __name__ == '__main__':
     for opt, arg in getopt.getopt(sys.argv[1:], "hi:s:v")[0]:
         
         if opt == '-s':
-            do_step =   [0] * 13
+            do_step =   [0] * 14
             arg_step = map(int, arg.split())
             for s in arg_step: do_step[s]=1
 
@@ -189,10 +198,11 @@ if __name__ == '__main__':
             print "         6. Computation of white matter mask from wmparc"
             print "         7. Computation of EuDX Tracking for DTI"
             print "         8. Computation of EuDX Tracking for CSD"
-            print "         9. Computation of Max ODF Tracking for CSD"
-            print "        10. Computation of Probabilistic Tracking for CSD"
-            print "        11. Tract Dissection by White Matter Query Language"
-            print "        12. Computation of connectivity matrices"
+            print "         9. Computation of EuDX Tracking for CSD - GWMI seeds"
+            print "        10. Computation of Max ODF Tracking for CSD"
+            print "        11. Computation of Probabilistic Tracking for CSD"
+            print "        12. Tract Dissection by White Matter Query Language"
+            print "        13. Computation of connectivity matrices"
             print "   help: -h"
             print "         this help"
             print "Examples:"

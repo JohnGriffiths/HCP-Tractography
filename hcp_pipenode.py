@@ -225,7 +225,7 @@ def tracking_eudx(dir_src, dir_out, verbose=False):
 
 
 
-def tracking_eudx4csd(dir_src, dir_out, verbose=False):
+def tracking_eudx4csd(dir_src, dir_out, verbose=False,gwmi_seeds=False):
 
     # Load data
     fbval = pjoin(dir_src, 'bvals_' + par_b_tag)
@@ -245,6 +245,19 @@ def tracking_eudx4csd(dir_src, dir_out, verbose=False):
                                     fa_thr=par_ar_fa_th)
     # print('Response function', response)
 
+
+    if gwmi_seeds:
+      gwmi_mask_file  = dir_src + '/wm_mask_b1k_2mm_add_gwmi.nii.gz' # dir_src + '/gwmi_' + par_dim_tag + '.nii.gz'
+      gwmi_mask_img = nib.load(gwmi_mask_file)
+      gwmi_mask_aff = gwmi_mask_img.get_affine()
+      gwmi_mask_dat = gwmi_mask_img.get_data()
+      seeds = seeds_from_mask(gwmi_mask_dat>0,density=30,affine=gwmi_mask_aff)
+      gwmi_tag = '_gwmi_seeds_den30'
+    else:
+      seeds = par_eudx_seeds 
+      gwmi_tag = ''
+
+
     # Model fitting
     csd_model = ConstrainedSphericalDeconvModel(gtab, response)
     csd_peaks = peaks_from_model(csd_model, 
@@ -257,7 +270,7 @@ def tracking_eudx4csd(dir_src, dir_out, verbose=False):
     # Computation of streamlines
     streamlines = EuDX(csd_peaks.peak_values,
                        csd_peaks.peak_indices, 
-                       seeds=par_eudx_seeds,
+                       seeds=seeds,
                        odf_vertices= sphere.vertices,
                        a_low=par_eudx_threshold)
 
@@ -270,7 +283,7 @@ def tracking_eudx4csd(dir_src, dir_out, verbose=False):
     hdr['dim'] = dims
     hdr['vox_to_ras'] = affine
     strm = ((sl, None, None) for sl in streamlines)
-    trk_name = 'tractogram_' + par_b_tag + '_' + par_dim_tag + '_' + par_csd_tag + '_' + par_eudx_tag + '.trk'
+    trk_name = 'tractogram_' + par_b_tag + '_' + par_dim_tag + '_' + par_csd_tag + '_' + par_eudx_tag + gwmi_tag + '.trk'
     trk_out = os.path.join(dir_out, trk_name)
     nib.trackvis.write(trk_out, strm, hdr, points_space='voxel')    
 
